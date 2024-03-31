@@ -1,0 +1,250 @@
+#:import Factory kivy.factory.Factory
+<TodoCard>:
+    elevation: 10
+    md_bg_color: app.theme_cls.bg_light
+    radius: [8]
+
+    MDFloatLayout:
+        id: bar
+        size_hint: .01, .9
+        pos_hint: {"center_x": .02, "center_y": .5}
+        md_bg_color: app.theme_cls.accent_color if checkbox.active else app.theme_cls.primary_color
+
+    MDLabel:
+        id: title
+        text: root.title
+        markup: True
+        font_name: "Poppins-SemiBold.ttf"
+        font_size: "20sp"
+        size_hint_x: .8
+        pos_hint: {"center_x": .46, "center_y": .7}
+    MDCheckbox:
+        id: checkbox
+        active: root.active
+        size_hint: None, None
+        size: "48dp", "48dp"
+        color_inactive: app.theme_cls.primary_color
+        #color_active: 0, 179/255, 0, 1
+        color_active: app.theme_cls.accent_color
+        pos_hint: {"right": 1, "top": 1}
+        on_active: app.check_habit(*args, title, bar)
+    MDLabel:
+        id: description
+        text: root.description
+        font_name: "Poppins-Regular.ttf"
+        markup: True
+        size_hint_x: .9
+        line_height: .8
+        pos_hint: {"center_x": .51, "center_y": .3}
+
+<MyOneLineIconListItem>:
+    IconLeftWidgetWithoutTouch:
+        icon: "account-outline"
+
+<SyncPopup>:
+    loading_spinner: loading_spinner
+    auto_dismiss: True
+    separator_height: 0
+    bg_color: app.theme_cls.bg_normal
+    text: "Are you sure you want to fetch the data from the spreadsheet ?\n\nThe local data will be erased and replaced by the spreadsheet data."
+
+    #size_hint: .95, .3
+    FloatLayout:
+        size_hint: self.parent.size_hint
+        bg_color: app.theme_cls.primary_color
+        Label:
+            text: "Are you sure you want to fetch the data from the spreadsheet ?\n\nThe local data will be erased and replaced by the spreadsheet data."
+
+            pos_hint: {"center_x":.5, "center_y":.8}
+            text_size: self.width, self.height
+            halign: 'center'
+            valign: 'middle'
+            size_hint_x: .95
+
+        MDGridLayout:
+            #orientation: 'horizontal'
+            pos_hint: {"y":0}
+            adaptive_size:True
+            x: self.parent.width+self.parent.x-self.width
+            cols: 2
+            spacing: 10, 0
+            padding: 5, 5
+
+            MDFlatButton:
+                md_bg_color: app.theme_cls.bg_light
+                text: 'Cancel'
+                on_release: root.dismiss()
+                #pos_hint: {"center_x":.3, "y":.1}
+
+            MDFlatButton:
+                md_bg_color: app.theme_cls.primary_color
+                text: 'Download data'
+                on_release: app.sync_callback(), root.dismiss()
+                #pos_hint: {"right":.95, "y":.1}
+
+        MDSpinner:
+            id: loading_spinner
+            pos_hint: {"center_x":.5, "center_y":.5}
+            size_hint: None, None
+            size: dp(46), dp(46)
+            active: root.spinner_active
+
+
+
+ScreenManager
+    MDScreen:
+        date: date
+        todo_list: todo_list
+        name: 'main'
+        id: main
+        MDBoxLayout:
+            id: main_layout
+            #md_bg_color: 1,1,1,1
+            orientation: 'vertical'
+            FloatLayout:
+                size_hint_y: .20
+                MDTopAppBar:
+                    id: topbar
+                    type: "top"
+                    #title: 'Today'
+                    md_bg_color: app.theme_cls.bg_normal
+                    specific_text_color: app.theme_cls.opposite_bg_normal
+                    pos_hint: {"top": 1}
+                    size_hint_y: 1
+                    right_action_items: [["account", lambda x: app.show_profiles_dialog()],["sync", lambda x: app.show_sync_dialog()],["dots-vertical", lambda x: app.settings_callback(x)]]
+
+                MDLabel:
+                    id: main_title
+                    text: "My Habits"
+                    pos_hint: {"center_x": .56, "center_y": .70}
+                    font_name: "Poppins-SemiBold.ttf"
+                    font_size: "30sp"
+
+                MDLabel:
+                    id: date
+                    text: "Yesterday"
+                    pos_hint: {"center_x": .565, "center_y": .45}
+                    font_name: "Poppins-SemiBold.ttf"
+                    font_size: "15sp"
+
+                #MDIconButton:
+                #    icon: "sync"
+                #    pos_hint: {"center_x": .89, "top": 1}
+                #    user_font_size: "30sp"
+                #    text_color: app.theme_cls.primary_color
+                #    theme_text_color: "Custom"
+                    #on_release:
+                    #    root.manager.transition.direction = "left"
+                    #    root.manager.current = "add_todo"
+
+
+                #DropBut:
+                #    id: profile_button
+                #    text: 'Choose a profile'
+                #    text_color: app.theme_cls.primary_color
+                #    line_color: app.theme_cls.primary_color
+                #    pos_hint: {'y':.1}
+                #    size_hint_x: 1
+                #    on_release: app.show_profiles_dialog()
+                #    FloatLayout:
+                #        MDIcon:
+                #            icon: 'chevron-down'
+                #            color: app.theme_cls.primary_color
+                #            pos_hint: {"right": 1, "center_y": .5}
+                MDBoxLayout:
+                    pos_hint: {"center_x": .5, "y": 0.05}
+                    orientation: 'horizontal'
+                    MDFlatButton:
+                        size_hint_x: .05
+                        on_release:
+                            app.move_one_day('previous')
+                        FloatLayout:
+                            MDIcon:
+                                icon: 'chevron-left'
+                                pos_hint: {"center_x": .5, "center_y": .5}
+                    MDFlatButton:
+                        id: date_picker
+                        text_color: app.theme_cls.primary_color
+                        #pos_hint: {"center_x": .5, "y": 0.05}
+                        size_hint_x: .90
+                        #values: app.profiles_list
+                        #on_release: app.drop_list.open(self)
+                        on_release: app.show_date_picker()
+                    MDFlatButton:
+                        size_hint_x: .05
+                        on_release:
+                            app.move_one_day('next')
+                        FloatLayout:
+                            MDIcon:
+                                icon: 'chevron-right'
+                                #color: app.theme_cls.primary_color
+                                pos_hint: {"center_x": .5, "center_y": .5}
+
+            FloatLayout:
+                size_hint_y: .80
+
+                ScrollView:
+                    do_scroll_y: True
+                    do_scroll_x: False
+                    size_hint_y: 1
+                    pos_hint: {"center_x": .5, "y": 0}
+                    bar_width: 0
+                    GridLayout:
+                        id: todo_list
+                        cols: 1
+                        height: self.minimum_height
+                        row_default_height: "65dp"
+                        size_hint_y: None
+                        padding: 15, 10
+                        spacing: 15, 10
+
+                MDSpinner:
+                    id: loading_spinner
+                    pos_hint: {"center_x":.5, "center_y":.5}
+                    size_hint: None, None
+                    size: dp(46), dp(46)
+                    active: False
+
+    MDScreen:
+        name: 'settings'
+        id: settings
+        MDBoxLayout:
+            id: main_layout
+            #md_bg_color: 1,1,1,1
+            orientation: 'vertical'
+
+            MDTopAppBar:
+                id: topbar
+                type: "top"
+                title: 'Settings'
+                md_bg_color: app.theme_cls.bg_normal
+                specific_text_color: app.theme_cls.opposite_bg_normal
+                #pos_hint: {"top": 1}
+                #size_hint_y: .22
+                left_action_items: [["arrow-left", lambda x: app.back_button_callback()]]
+            ScrollView:
+                size_hint_y: 1
+                do_scroll_y: True
+                do_scroll_x: False
+
+                bar_width: 0
+                GridLayout:
+                    cols: 1
+                    height: self.minimum_height
+                    row_default_height: "54dp"
+                    size_hint_y: None
+                    padding: 15, 10
+                    spacing: 15, 10
+
+                    OneLineIconListItem:
+                        text: 'Theme'
+                        on_release: app.show_theme_dialog()
+                        IconLeftWidgetWithoutTouch:
+                            icon: "theme-light-dark"
+                    OneLineIconListItem:
+                        text: 'Primary Color'
+                        on_release: app.show_color_dialog()
+                        IconLeftWidgetWithoutTouch:
+                            icon: "palette-outline"
+                    OneLineIconListItem:
+                    OneLineIconListItem:
